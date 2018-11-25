@@ -1,0 +1,3 @@
+r:
+	go build
+	./mux
