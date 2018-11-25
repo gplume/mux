@@ -54,7 +54,8 @@ func main() {
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		Handler:      RecoverFromPanic(logger, api),
+		// Handler:      RecoverFromPanic(logger, api),
+		Handler: api,
 	}
 
 	// Run our server in a goroutine so that it doesn't block.
