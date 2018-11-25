@@ -10,7 +10,6 @@ import (
 
 // RecoverFromPanic as main recover for the global Handler...
 func RecoverFromPanic(logger *log.Logger, next http.Handler) http.Handler {
-	// return func(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rec := recover(); rec != nil {
@@ -27,7 +26,6 @@ func RecoverFromPanic(logger *log.Logger, next http.Handler) http.Handler {
 		}()
 		next.ServeHTTP(w, r)
 	})
-	// }
 }
 
 // Adapt Our Adapt function takes the handler you want to adapt,

@@ -1,10 +1,8 @@
 package main
 
 import (
-	"errors"
 	"net/http"
 	"reflect"
-	"time"
 )
 
 // HomeHandler ...
@@ -21,6 +19,10 @@ func (h *HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	q2 := r.URL.Query().Get("page")
 	logger.Println("PAGE:", q2, reflect.TypeOf(q2))
 
-	time.Sleep(2 * time.Second)
-	panic(errors.New("| XxXxXxX P A N I C XxXxXxX |"))
+	// time.Sleep(2 * time.Second)
+	// panic(errors.New("| XxXxXxX P A N I C XxXxXxX |"))
+
+	JSON(w, 200, map[string]interface{}{
+		"msg": "OK",
+	})
 }

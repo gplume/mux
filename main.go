@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -30,19 +32,18 @@ func ShiftPath(p string) (head, tail string) {
 var logger *log.Logger
 
 func main() {
-	var wait time.Duration
 	logger = log.New(os.Stdout, "server: ", log.Lshortfile)
 
 	api := &API{
+		/* "/" */
 		HomeHandler: Adapt(new(HomeHandler),
 			// with middlewares:
-			// RecoverFromPanic(logger),
 			Notify(logger),
 			Logging(logger),
 		),
+		/* "/user" */
 		UserHandler: Adapt(new(UserHandler),
 			// with middlewares:
-			// RecoverFromPanic(logger),
 			Notify(logger),
 			Logging(logger),
 		),
@@ -50,12 +51,11 @@ func main() {
 
 	srv := &http.Server{
 		Addr: ":8080",
-		// Good practice to set timeouts to avoid Slowloris attacks.
+		// It is good practice to set timeouts to avoid Slowloris attacks.
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		// Handler:      RecoverFromPanic(logger, api),
-		Handler: api,
+		Handler:      RecoverFromPanic(logger, api),
 	}
 
 	// Run our server in a goroutine so that it doesn't block.
@@ -74,7 +74,7 @@ func main() {
 	<-c
 
 	// Create a deadline to wait for.
-	ctx, cancel := context.WithTimeout(context.Background(), wait)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(5*time.Second))
 	defer cancel()
 	// Doesn't block if no connections, but will otherwise wait
 	// until the timeout deadline.
@@ -108,4 +108,17 @@ func (h *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Error(w, "Not Found", http.StatusNotFound)
+}
+
+// JSON ...
+func JSON(w http.ResponseWriter, status int, value interface{}) {
+	body, err := json.Marshal(value)
+	if err != nil {
+		logger.Println(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=UTF8")
+	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
+	w.WriteHeader(status)
+	_, err = w.Write(body)
 }
