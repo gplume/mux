@@ -110,7 +110,7 @@ func (h *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Not Found", http.StatusNotFound)
 }
 
-JSMAP shortcut for map[string]interface{}
+// JSMAP shortcut for map[string]interface{}
 type JSMAP map[string]interface{}
 
 // JSON ...
