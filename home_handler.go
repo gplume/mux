@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 )
@@ -10,8 +11,9 @@ type HomeHandler struct{}
 
 // HomeHandler implements ServeHTPP to return an http.Handler (interface satisfying)
 func (h *HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	logger.Println("|---------WELCOME TO THE API!---------|")
+	fmt.Println("=======================================")
+	fmt.Println("|---------WELCOME TO THE API!---------|")
+	fmt.Println("=======================================")
 
 	q1 := r.URL.Query().Get("id")
 	logger.Println("ID:", q1, reflect.TypeOf(q1))

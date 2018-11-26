@@ -12,22 +12,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gplume/mux/middle"
 )
-
-// https://blog.merovius.de/2017/06/18/how-not-to-use-an-http-router.html
-// https://medium.com/@matryer/writing-middleware-in-golang-and-how-go-makes-it-so-much-fun-4375c1246e81
-
-// ShiftPath splits off the first component of p, which will be cleaned of
-// relative components before processing. head will never contain a slash and
-// tail will always be a rooted path without trailing slash.
-func ShiftPath(p string) (head, tail string) {
-	p = path.Clean("/" + p)
-	i := strings.Index(p[1:], "/") + 1
-	if i <= 0 {
-		return p[1:], "/"
-	}
-	return p[1:i], p[i:]
-}
 
 var logger *log.Logger
 
@@ -35,17 +22,17 @@ func main() {
 	logger = log.New(os.Stdout, "server: ", log.Lshortfile)
 
 	api := &API{
-		/****** "/" *******/
-		HomeHandler: Adapt(&HomeHandler{},
-			// with middlewares:
-			Notify(logger),
-			Logging(logger),
+		// route: "/"
+		HomeHandler: middle.Ware(new(HomeHandler),
+			// with:
+			middle.Notify(logger),
+			middle.Logging(logger),
 		),
-		/************* "/user" **************/
-		UserHandler: Adapt(new(UserHandler),
-			// with middlewares:
-			Notify(logger),
-			Logging(logger),
+		// route: "/user"
+		UserHandler: middle.Ware(new(UserHandler),
+			// with:
+			middle.Notify(logger),
+			middle.Logging(logger),
 		),
 	}
 
@@ -55,7 +42,7 @@ func main() {
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		Handler:      RecoverFromPanic(logger, api),
+		Handler:      middle.RecoverFromPanic(logger, api),
 	}
 
 	// Run our server in a goroutine so that it doesn't block.
@@ -86,6 +73,21 @@ func main() {
 	os.Exit(0)
 }
 
+// https://blog.merovius.de/2017/06/18/how-not-to-use-an-http-router.html
+// https://medium.com/@matryer/writing-middleware-in-golang-and-how-go-makes-it-so-much-fun-4375c1246e81
+
+// CutPath splits off the first component of p, which will be cleaned of
+// relative components before processing. head will never contain a slash and
+// tail will always be a rooted path without trailing slash.
+func CutPath(p string) (head, tail string) {
+	p = path.Clean("/" + p)
+	i := strings.Index(p[1:], "/") + 1
+	if i <= 0 {
+		return p[1:], "/"
+	}
+	return p[1:i], p[i:]
+}
+
 // API ...
 type API struct {
 	HomeHandler http.Handler
@@ -95,10 +97,10 @@ type API struct {
 func (h *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************")
 	fmt.Println("API ServeHTTP Method called")
-	fmt.Println(ShiftPath(r.URL.Path))
-	fmt.Println("-------------------------")
+	fmt.Println(CutPath(r.URL.Path))
+	fmt.Println("******************************")
 	var head string
-	head, r.URL.Path = ShiftPath(r.URL.Path)
+	head, r.URL.Path = CutPath(r.URL.Path)
 	switch head {
 	case "user":
 		h.UserHandler.ServeHTTP(w, r)
@@ -107,7 +109,7 @@ func (h *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.HomeHandler.ServeHTTP(w, r)
 		return
 	}
-	http.Error(w, "Not Found", http.StatusNotFound)
+	http.Error(w, fmt.Sprintf("Path: %q Not Found", r.URL.Path), http.StatusNotFound)
 }
 
 // JSMAP shortcut for map[string]interface{}
