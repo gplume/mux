@@ -22,7 +22,7 @@ func (h *HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// time.Sleep(2 * time.Second)
 	// panic(errors.New("| XxXxXxX P A N I C XxXxXxX |"))
 
-	JSON(w, 200, map[string]interface{}{
+	JSON(w, http.StatusOK, JSMAP{
 		"msg": "OK",
 	})
 }

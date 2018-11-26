@@ -35,13 +35,13 @@ func main() {
 	logger = log.New(os.Stdout, "server: ", log.Lshortfile)
 
 	api := &API{
-		/* "/" */
-		HomeHandler: Adapt(new(HomeHandler),
+		/****** "/" *******/
+		HomeHandler: Adapt(&HomeHandler{},
 			// with middlewares:
 			Notify(logger),
 			Logging(logger),
 		),
-		/* "/user" */
+		/************* "/user" **************/
 		UserHandler: Adapt(new(UserHandler),
 			// with middlewares:
 			Notify(logger),
@@ -109,6 +109,9 @@ func (h *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Error(w, "Not Found", http.StatusNotFound)
 }
+
+JSMAP shortcut for map[string]interface{}
+type JSMAP map[string]interface{}
 
 // JSON ...
 func JSON(w http.ResponseWriter, status int, value interface{}) {
