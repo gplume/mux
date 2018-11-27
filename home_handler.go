@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"time"
 )
 
 // HomeHandler ...
@@ -21,9 +22,12 @@ func (h *HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	q2 := r.URL.Query().Get("page")
 	logger.Println("PAGE:", q2, reflect.TypeOf(q2))
 
-	// time.Sleep(2 * time.Second)
+	time.Sleep(444 * time.Millisecond)
+	// Do P A N I C !!!
 	// panic(errors.New("| XxXxXxX P A N I C XxXxXxX |"))
-
+	// or:
+	// var rr []int
+	// rr[1] = 2
 	JSON(w, http.StatusOK, JSMAP{
 		"msg": "OK",
 	})

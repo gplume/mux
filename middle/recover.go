@@ -12,7 +12,7 @@ func RecoverFromPanic(logger *log.Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rec := recover(); rec != nil {
-				logger.Println("err RecoverFromPanic2", rec,
+				logger.Println("err_recoverFromPanic", rec,
 					"http.url", r.RequestURI, "http.path", r.URL.Path,
 					"http.method", r.Method, "http.user_agent", r.Header.Get("User-Agent"),
 					"http.proto", r.Proto)

@@ -1,11 +1,18 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 )
+
+type contextKey string
+
+func (c contextKey) String() string {
+	return string(c)
+}
 
 // UserHandler ...
 type UserHandler struct{}
@@ -16,10 +23,14 @@ func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(CutPath(r.URL.Path))
 	fmt.Println("====================================")
 
+	// using context to pass some value found in query:
+	headUser := r.URL.Query().Get("id")
+	ctx := context.WithValue(r.Context(), contextKey("XX--ID"), headUser)
+
 	var head string
 	head, r.URL.Path = CutPath(r.URL.Path)
-	ids := make([]int, 0)
 	idArr := strings.Split(head, ",")
+	ids := make([]int, len(idArr))
 	if len(idArr) >= 1 {
 		for _, v := range idArr {
 			id, err := strconv.Atoi(v)
@@ -35,7 +46,7 @@ func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
 		switch r.Method {
 		case "GET":
-			h.handleGet(w, r, ids...)
+			h.handleGet(w, r.WithContext(ctx), ids...)
 		case "PUT":
 			h.handlePut(w, r, ids...)
 		default:
@@ -48,7 +59,9 @@ func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) handleGet(w http.ResponseWriter, r *http.Request, ids ...int) {
+	fmt.Println("XX--ID:", r.Context().Value(contextKey("XX--ID")))
 	q1 := r.URL.Query().Get("id")
+
 	jsm := JSMAP{}
 	for ki, vi := range ids {
 		jsm[strconv.Itoa(ki)] = vi
