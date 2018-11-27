@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gplume/mux/middle"
+	"github.com/gplume/no-mux/middle"
 )
 
 var logger *log.Logger
