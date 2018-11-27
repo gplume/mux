@@ -15,7 +15,9 @@ func (c contextKey) String() string {
 }
 
 // UserHandler ...
-type UserHandler struct{}
+type UserHandler struct {
+	ProfileHandler *ProfileHandler
+}
 
 func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("====================================")
@@ -52,6 +54,19 @@ func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		default:
 			http.Error(w, "Only GET and PUT are allowed", http.StatusMethodNotAllowed)
 		}
+	} else {
+		head, _ := CutPath(r.URL.Path)
+		switch head {
+		case "profile":
+			// We can't just make ProfileHandler an http.Handler; it needs the
+			// user id. Let's instead… !
+			h.ProfileHandler.Handler(headUser).ServeHTTP(w, r)
+		case "account":
+			// Left as an exercise to the reader.
+		default:
+			http.Error(w, "Not Found", http.StatusNotFound)
+		}
+		return
 	}
 	if r.URL.Path == "/extends" {
 		http.Error(w, "Not Implemented yet", http.StatusForbidden)
@@ -78,4 +93,16 @@ func (h *UserHandler) handleGet(w http.ResponseWriter, r *http.Request, ids ...i
 func (h *UserHandler) handlePut(w http.ResponseWriter, r *http.Request, id ...int) {
 	fmt.Printf("handlePut ID: %v", id)
 	fmt.Println("")
+}
+
+// ProfileHandler .
+/////////////////////
+type ProfileHandler struct {
+}
+
+// Handler .
+func (h *ProfileHandler) Handler(id string) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		// Do whatever
+	})
 }
