@@ -17,13 +17,12 @@ type Adapter func(http.Handler) http.Handler
 //  calling them one by one (in reverse order) in a chained manner, returning the result of the first adapter.
 func Ware(h http.Handler, adapters ...Adapter) http.Handler {
 	// reverse order:
-	// for _, adapter := range adapters {
-	// 	h = adapter(h)
-	// }
-
-	// straight order:
-	for i := len(adapters) - 1; i >= 0; i-- {
-		h = adapters[i](h)
+	for _, adapter := range adapters {
+		h = adapter(h)
 	}
+	// straight order:
+	// for i := len(adapters) - 1; i >= 0; i-- {
+	// 	h = adapters[i](h)
+	// }
 	return h
 }

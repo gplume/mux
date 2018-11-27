@@ -59,7 +59,6 @@ func (h *UserHandler) handleGet(w http.ResponseWriter, r *http.Request, ids ...i
 	if q1 != "" {
 		json["query_id"] = q1
 	}
-
 	JSON(w, http.StatusOK, json)
 }
 
