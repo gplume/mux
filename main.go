@@ -25,14 +25,14 @@ func main() {
 		// route: "/"
 		HomeHandler: middle.Ware(new(HomeHandler),
 			// with:
-			middle.Notify(logger),
 			middle.Logging(logger),
+			middle.Notify(logger),
 		),
 		// route: "/user"
 		UserHandler: middle.Ware(new(UserHandler),
 			// with:
-			middle.Notify(logger),
 			middle.Logging(logger),
+			middle.Notify(logger),
 		),
 	}
 
@@ -75,6 +75,7 @@ func main() {
 
 // https://blog.merovius.de/2017/06/18/how-not-to-use-an-http-router.html
 // https://medium.com/@matryer/writing-middleware-in-golang-and-how-go-makes-it-so-much-fun-4375c1246e81
+// https://husobee.github.io/golang/url-router/2015/06/15/why-do-all-golang-url-routers-suck.html
 
 // CutPath splits off the first component of p, which will be cleaned of
 // relative components before processing. head will never contain a slash and
