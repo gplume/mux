@@ -1,3 +1,3 @@
 r:
 	go build
-	./mux
+	./no-mux
