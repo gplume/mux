@@ -2,34 +2,28 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"path"
-	"strconv"
-	"strings"
 	"time"
 
+	"github.com/gplume/no-mux/handle"
+	"github.com/gplume/no-mux/logger"
 	"github.com/gplume/no-mux/middle"
 )
 
-var logger *log.Logger
-
 func main() {
-	logger = log.New(os.Stdout, "server: ", log.Lshortfile)
 
-	api := &API{
+	logger := logger.New()
+	api := &handle.API{
 		// route: "/"
-		HomeHandler: middle.Ware(new(HomeHandler),
+		HomeHandler: middle.Ware(new(handle.Home),
 			// with:
 			middle.Logging(logger),
 			middle.Notify(logger),
 		),
 		// route: "/user"
-		UserHandler: middle.Ware(new(UserHandler),
+		UserHandler: middle.Ware(new(handle.User),
 			// with:
 			middle.Logging(logger),
 			middle.Notify(logger),
@@ -71,60 +65,4 @@ func main() {
 	// to finalize based on context cancellation.
 	logger.Println("shutting down")
 	os.Exit(0)
-}
-
-// https://blog.merovius.de/2017/06/18/how-not-to-use-an-http-router.html
-// https://medium.com/@matryer/writing-middleware-in-golang-and-how-go-makes-it-so-much-fun-4375c1246e81
-// https://husobee.github.io/golang/url-router/2015/06/15/why-do-all-golang-url-routers-suck.html
-
-// CutPath splits off the first component of p, which will be cleaned of
-// relative components before processing. head will never contain a slash and
-// tail will always be a rooted path without trailing slash.
-func CutPath(p string) (head, tail string) {
-	p = path.Clean("/" + p)
-	i := strings.Index(p[1:], "/") + 1
-	if i <= 0 {
-		return p[1:], "/"
-	}
-	return p[1:i], p[i:]
-}
-
-// API ...
-type API struct {
-	HomeHandler http.Handler
-	UserHandler http.Handler
-}
-
-func (h *API) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************")
-	fmt.Println("API ServeHTTP Method called")
-	fmt.Println(CutPath(r.URL.Path))
-	fmt.Println("******************************")
-	var head string
-	head, r.URL.Path = CutPath(r.URL.Path)
-	switch head {
-	case "user":
-		h.UserHandler.ServeHTTP(w, r)
-		return
-	case "":
-		h.HomeHandler.ServeHTTP(w, r)
-		return
-	}
-	http.Error(w, fmt.Sprintf("Path: %q Not Found", r.URL.Path), http.StatusNotFound)
-}
-
-// JSMAP shortcut for map[string]interface{}
-type JSMAP map[string]interface{}
-
-// JSON ...
-func JSON(w http.ResponseWriter, status int, value interface{}) {
-	body, err := json.Marshal(value)
-	if err != nil {
-		logger.Println(err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json; charset=UTF8")
-	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
-	w.WriteHeader(status)
-	_, err = w.Write(body)
 }
