@@ -7,7 +7,7 @@ import (
 )
 
 // Notify ...
-func Notify(logger *log.Logger) Adapter {
+func Notify(logger *log.Logger) Wrapper {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			logger.Println(">>>>>>>>>>>> Notify() before")
