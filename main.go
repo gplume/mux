@@ -40,6 +40,7 @@ func main() {
 	}
 
 	// Run our server in a goroutine so that it doesn't block.
+
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
 			logger.Fatal(err)
